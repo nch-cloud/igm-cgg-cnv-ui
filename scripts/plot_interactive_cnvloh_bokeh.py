@@ -28,7 +28,7 @@ from bokeh.models.widgets import (
     TextInput,
 )
 from bokeh.palettes import YlOrRd
-from bokeh.plotting import ColumnDataSource, figure, output_file, save
+from bokeh.plotting import figure, output_file, save
 from more_itertools import sort_together
 
 # Turns a set of values into a confidence interval
