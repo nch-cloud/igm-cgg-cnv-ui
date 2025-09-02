@@ -1,19 +1,17 @@
 # import plotly.express as px
 # import plotly.graph_objects as go
 # from plotly.subplots import make_subplots
-import pandas as pd
-import numpy as np
-import os
-import math
-import json
-import glob
 import argparse
-import gzip
+import json
+import math
+import os
+import time
 
 # import scipy.stats as st
 import traceback
-import time
 
+import numpy as np
+import pandas as pd
 from plot_interactive_cnvloh_bokeh import generate_chrom_plot as cnvloh_bokeh_plot
 from plot_interactive_cnvloh_bokeh import (
     generate_genome_plot as cnvloh_bokeh_plot_genome,

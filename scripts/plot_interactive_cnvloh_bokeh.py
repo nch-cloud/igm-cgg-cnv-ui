@@ -1,42 +1,35 @@
-from bokeh.plotting import figure, output_file, save, ColumnDataSource
-from bokeh.models import (
-    BoxAnnotation,
-    Range1d,
-    CustomJS,
-    LabelSet,
-    ColumnDataSource,
-    NumeralTickFormatter,
-    RadioButtonGroup,
-    CustomJSFilter,
-    CDSView,
-    Button,
-)
-from bokeh.layouts import gridplot, row, column, widgetbox
-from bokeh.palettes import YlOrRd
-from bokeh.io import output_notebook
-from bokeh.models.widgets import (
-    DataTable,
-    DateFormatter,
-    TableColumn,
-    Slider,
-    Spinner,
-    TextInput,
-    CheckboxGroup,
-)
-from bokeh.models.tools import HoverTool
-from bokeh.embed import json_item
-
-from more_itertools import sort_together
+import json
+import math
+import os
+import time
 
 import numpy as np
 import pandas as pd
-
-# import scipy.stats as st
-import os
-import json
-import math
-import datetime
-import time
+from bokeh.embed import json_item
+from bokeh.layouts import column, gridplot, row
+from bokeh.models import (
+    BoxAnnotation,
+    Button,
+    CDSView,
+    ColumnDataSource,
+    CustomJS,
+    CustomJSFilter,
+    LabelSet,
+    NumeralTickFormatter,
+    RadioButtonGroup,
+    Range1d,
+)
+from bokeh.models.tools import HoverTool
+from bokeh.models.widgets import (
+    DataTable,
+    Slider,
+    Spinner,
+    TableColumn,
+    TextInput,
+)
+from bokeh.palettes import YlOrRd
+from bokeh.plotting import ColumnDataSource, figure, output_file, save
+from more_itertools import sort_together
 
 # Turns a set of values into a confidence interval
 # def points_to_ci(values_list:list, alpha=0.95):
@@ -1194,7 +1187,7 @@ function cnvloh_to_status(log2, baf, cnv_cutoff, loh_cutoff) {
     var copy_status;
     if (Math.abs(log2) >= cnv_cutoff){num_copies = 2 ** (1+log2);} else {num_copies = 2;}
     if (baf <= loh_cutoff || 1-baf <= loh_cutoff){is_loh = true;} else {is_loh = false;}
-        
+
     if (num_copies >= 5.0){
         copy_status = 'Amplification';
         if (is_loh == false){copy_status = copy_status + ' (Balanced)';}
@@ -1264,7 +1257,7 @@ const bin_sd_stored = bins_data['cnv_bin_sd_stored'];
 
 let label_pos_adjustment_top = 0;
 let label_pos_adjustment_bottom = 0
-    
+
 for (var i = 0; i < seg_y.length; i++) {
     seg_y[i] = Math.log2(Math.max(0,( Math.pow(2,(seg_y_stored[i]+offset+1))-(2*(1-cell)) )/cell )) - 1;
     seg_y_height[i] = Math.log2(Math.max(0,( Math.pow(2,(seg_y_height_stored[i]+1))-(2*(1-cell)) )/cell )) - 1;
@@ -1282,17 +1275,17 @@ for (var i = 0; i < seg_y.length; i++) {
     if (seg_y[i] > 0){cnv_label_pos[i] = Bokeh.documents[0].get_model_by_name('cnv_plot').y_range.end-0.3-label_pos_adjustment_top; if(label_pos_adjustment_top == 0){label_pos_adjustment_top = 0.2;}else{label_pos_adjustment_top = 0;}} else {cnv_label_pos[i] = Bokeh.documents[0].get_model_by_name('cnv_plot').y_range.start + label_pos_adjustment_bottom; if(label_pos_adjustment_bottom == 0){label_pos_adjustment_bottom = 0.2;}else{label_pos_adjustment_bottom = 0;}}
     if (cnv_y_display[i] != seg_y[i]){cnv_label_alpha[i] = 1;} else {cnv_label_alpha[i] = 0;}
     }
-    
+
 for (var i = 0; i < bin_y.length; i++){
     bin_y[i] = Math.log2(Math.max(0,( Math.pow(2,(bin_y_stored[i]+offset+1))-(2*(1-cell)) )/cell )) - 1;
     bin_height[i] = Math.log2(Math.max(0,( Math.pow(2,(bin_height_stored[i]+1))-(2*(1-cell)) )/cell )) - 1;
     bin_sd[i] = bin_sd_stored[i] / cell;
     }
-    
+
     console.log('End segments code_pt_1');
     const endTime = new Date();
     console.log('Elapsed time: ' + (endTime - startTime) + ' ms')
-    
+
 """
 
     change_pt_1 = """
@@ -1378,18 +1371,18 @@ def generate_callbackJS_genelist(source_genetable_stored, genelist_field):
         code="""
         console.log("Genelist was updated:");
         console.log(genelist_field.value_input);
-                        
+
         const genelist_string = genelist_field.value_input;
         var genes_set = undefined;
-        
+
         if (!(!genelist_string || genelist_string == '' || genelist_string == '[]'))
         {
             genes_set = new Set(genelist_string.replace('[','').replace(']','').split(','));
         }
         console.log(genes_set);
-        
+
         const data_stored = source_stored.data;
-        
+
         const seg_mean_stored = data_stored['seg_mean'];
         const chr_stored = data_stored['CHR'];
         const symbol_stored = data_stored['SYMBOL'];
@@ -1404,7 +1397,7 @@ def generate_callbackJS_genelist(source_genetable_stored, genelist_field):
         const seg_baf_stored = data_stored['seg_baf'];
         const seg_loh_stored = data_stored['seg_loh'];
         var stored_label_alpha = data_stored['label_alpha'];
-        
+
         for (var i = 0; i < seg_mean_stored.length; i++) {
             if (genes_set == null || genes_set.has("all") || (genes_set.has(entrez_stored[i].toString()) && !genes_set.has("none")))
             {stored_label_alpha[i] = 1;} else {stored_label_alpha[i] = 0;}
@@ -1449,20 +1442,20 @@ function get_cnv_color(log2,cnv_cutoff) {
     else {color_index = 3;}
     return color_index;
 }
-        
+
         console.log('Attempting gene table update');
         const startTime = new Date();
 
         const data = source.data;
         const data_stored = source_stored.data;
         const data_focal_effects = source_focal_effects.data;
-    
+
         const colors_data = source_colors.data;
         const cnv_cutoff = cnv_slider.value;
         const loh_cutoff = loh_slider.value;
         const cell = cell_slider.value;
         const offset = offset_slider.value;
-    
+
         const cnv_colors = colors_data['cnv_colors'];
         const seg_mean = data['seg_mean'];
         const gene_log2 = data['gene_log2'];
@@ -1482,7 +1475,7 @@ function get_cnv_color(log2,cnv_cutoff) {
         const seg_loh = data['seg_loh'];
         const seg_loh_status = data['seg_loh_status'];
         const gene_label_alpha = data['label_alpha'];
-    
+
         const seg_mean_stored = data_stored['seg_mean'];
         const chr_stored = data_stored['CHR'];
         const symbol_stored = data_stored['SYMBOL'];
@@ -1497,12 +1490,12 @@ function get_cnv_color(log2,cnv_cutoff) {
         const seg_baf_stored = data_stored['seg_baf'];
         const seg_loh_stored = data_stored['seg_loh'];
         const stored_label_alpha = data_stored['label_alpha'];
-        
+
         var count = 0;
         var count_top = 0;
         var count_middle = 0;
         var count_bottom = 0;
-        
+
         for (var i = 0; i < seg_mean_stored.length; i++) {
             var cnv_calc = Math.log2(Math.max(0,( Math.pow(2,(seg_mean_stored[i] + offset + 1))-(2*(1-cell)) )/cell )) - 1;
             var calc_gene_log2 = cnv_calc;
@@ -1527,11 +1520,11 @@ function get_cnv_color(log2,cnv_cutoff) {
                 gene_loh_color[count] = loh_color;
                 if (gene_id in data_focal_effects){
                     // console.log(`${gene_symbol} (${gene_id}) is focal.`);
-                    
+
                     // Find the most extreme focal log2 for this gene, which becomes the gene's reported log2 value.
                     // This code sorts the log2 values by their absolute value in descending order and selects the first entry.
                     calc_gene_log2 = data_focal_effects[gene_id]['log2'].sort((a, b) => Math.abs(b) - Math.abs(a))[0];
-                    
+
                     if (data_focal_effects[gene_id]['status'][0].includes('Revers')){
                         cnv_color = "mediumorchid";
                     } else {
@@ -1618,7 +1611,7 @@ def generate_callbackJS_focals(
             if (Math.abs(parent_log2) >= cnv_cutoff){num_copies = 2 ** (1+parent_log2);} else {parent_num_copies = 2;}
             delta_log2 = log2 - parent_log2;
             delta_num_copies = num_copies - parent_num_copies;
-            
+
             if (Math.abs(parent_log2) > cnv_cutoff){
                 if (Math.abs(log2) < cnv_cutoff){text_status = 'Focal Re-Normalization';}
                 else if (delta_log2 > cnv_cutoff){
@@ -1634,7 +1627,7 @@ def generate_callbackJS_focals(
                     else if (parent_log2 > cnv_cutoff){text_status = text_status + ' (Reversal)';}
                 }
                 else {text_status = 'Indeterminate Focal Event';}
-            } 
+            }
             else {
                 if (log2 > cnv_cutoff){
                     if (num_copies > 5){text_status = 'Focal Amplification';}
@@ -1648,8 +1641,8 @@ def generate_callbackJS_focals(
             }
         return text_status;
         }
-            
-            
+
+
         console.log('Attempting focals data update');
         const startTime = new Date();
 
@@ -1658,20 +1651,20 @@ def generate_callbackJS_focals(
         const data_stored = source_stored.data;
         const data_focal_effects = source_focal_effects.data;
         console.log(data_focal_effects);
-        
+
         const cell = cell_slider.value;
         const offset = offset_slider.value;
         const cnv_cutoff = cnv_slider.value;
         const sd_cutoff = sd_slider.value;
-        
+
         const genelist_string = genelist_field.value_input;
         var genes_set = undefined;
-        
+
         if (!(!genelist_string || genelist_string == '' || genelist_string == '[]'))
         {
             genes_set = new Set(genelist_string.replace('[','').replace(']','').split(','));
         }
-        
+
         const type_stored = data_stored['event_type'];
         const id_stored = data_stored['event_id'];
         const chr_stored = data_stored['chrom'];
@@ -1692,7 +1685,7 @@ def generate_callbackJS_focals(
         const cytobands_stored = data_stored['cytoband'];
         const gene_stored = data_stored['gene'];
         const baseline_adj_stored = data_stored['baseline_adj'];
-        
+
         const id_gene = data_genes['event_id'];
         const chr_gene = data_genes['chrom'];
         const symbol_gene = data_genes['symbol'];
@@ -1712,7 +1705,7 @@ def generate_callbackJS_focals(
         const gene_gene = data_genes['gene'];
         const display_y_gene = data_genes['display_y'];
         const baseline_adj_gene = data_genes['baseline_adj'];
-        
+
         const id_exon = data_exons['event_id'];
         const chr_exon = data_exons['chrom'];
         const symbol_exon = data_exons['symbol'];
@@ -1737,16 +1730,16 @@ def generate_callbackJS_focals(
         const gene_exon = data_exons['gene'];
         const display_y_exon = data_exons['display_y'];
         const baseline_adj_exon = data_exons['baseline_adj'];
-        
+
         var g = 0;
         var e = 0;
-        
+
         var cnv_calc;
         var parent_cnv_calc
         var parent_cnv_calc;
         var text_status;
         var display_y;
-        
+
         Object.keys(data_focal_effects).forEach(key => delete data_focal_effects[key]);
         for (var i = 0; i < type_stored.length; i++) {
             if ( Math.abs(delta_sd_stored[i]) >= sd_cutoff && (!genes_set || genes_set.has('all') || genes_set.has(entrez_stored[i]))){
@@ -1900,7 +1893,7 @@ function loh_to_baf(loh_input){
     var baf_result = 0.5 - loh_input;
     return baf_result;
     }
-    
+
 function log2_to_copy(log2_input){
     var copy_number = Math.max(0, Math.pow(2,log2_input+1) );
     return copy_number;
@@ -1910,7 +1903,7 @@ function copy_to_log2(copy_num_input){
     var log2_calc = Math.log2(Math.max(copy_num_input),0.01) - 1;
     return log2_calc
     }
-    
+
 function cell_adj_copy(copy_num, cell_adj){
     var adj_copy = Math.max(0,((copy_num - 2) / cell_adj)+2);
     return adj_copy
@@ -1926,7 +1919,7 @@ function cell_adj_baf(baf_input, cell_adj){
 function closest_copy_num(calc_copy, has_loh){
     var nearest_copy = Math.round(calc_copy);
     if (!has_loh && nearest_copy % 2 != 0)
-    { 
+    {
         if (nearest_copy < 2)
         {nearest_copy = 0;}
         else {nearest_copy = nearest_copy + 1;}
@@ -1939,9 +1932,9 @@ function get_loh_diff(copy_num, seg_baf)
     let percent_list = [];
     let diff_list = [];
     let genotype_list = [];
-    
+
     let int_copy = Math.round(copy_num);
-    
+
     for (let i = 0; i <= Math.ceil(int_copy/2); i++)
     {
         if (int_copy == 0)
@@ -1955,7 +1948,7 @@ function get_loh_diff(copy_num, seg_baf)
             percent_list.push(i/(int_copy+0.0001));
             diff_list.push(Math.abs(  (i/(int_copy+0.0001)) - seg_baf));
             genotype_list.push( "A".repeat( int_copy-i ) + "B".repeat(i));
-            
+
             percent_list.push(1 - (i/ (int_copy+0.0001)));
             diff_list.push(Math.abs(  (1 - (i/ (int_copy+0.0001))) - seg_baf));
             genotype_list.push( "A".repeat( i ) + "B".repeat(int_copy - i));
@@ -1970,10 +1963,10 @@ function get_loh_diff(copy_num, seg_baf)
             min_index = i;
         }
     }
-    
+
     return {
-        "diffScore":diff_list[min_index], 
-        "closestBAF": percent_list[min_index], 
+        "diffScore":diff_list[min_index],
+        "closestBAF": percent_list[min_index],
         "closestGenotype": genotype_list[min_index]
     };
 }
@@ -2000,7 +1993,7 @@ function segment_badness(seg_log2, seg_baf, cnv_cutoff, loh_cutoff, cell_adj, of
 function badness_of_fit(log2_list, loh_list, seg_len, cnv_cutoff, loh_cutoff, cell, offset){
     var total_badness = 0
     var seg_badness = 0;
-    for (let i = 0; i < log2_list.length; i++) 
+    for (let i = 0; i < log2_list.length; i++)
     {
         seg_badness = segment_badness(log2_list[i], loh_to_baf(loh_list[i]), cnv_cutoff, loh_cutoff, cell, offset);
         total_badness += seg_badness * Math.min(50000000,seg_len[i])/50000000;
@@ -2014,7 +2007,7 @@ function calc_best_fit_cell(log2_list, baf_list, seg_len, cnv_cutoff, loh_cutoff
     var cell_iter = 1;
     var score = 99999;
     var best_fit_score = 99999;
-    
+
     for (let i = 0; i < 800; i++)
     {
         cell_iter = 1 - i/1000;
@@ -2023,9 +2016,9 @@ function calc_best_fit_cell(log2_list, baf_list, seg_len, cnv_cutoff, loh_cutoff
         fit_scores.push(score);
         if (show_logging){console.log(`${cellularities[cellularities.length - 1]*100}% : ${fit_scores[fit_scores.length - 1]}`);}
     }
-    
-    best_fit_score = Math.min.apply(null,fit_scores); 
-    
+
+    best_fit_score = Math.min.apply(null,fit_scores);
+
     for (let i = 0; i < fit_scores.length; i++)
     {
         if (best_fit_score == fit_scores[i])
@@ -2039,26 +2032,26 @@ function calc_best_fit_cell(log2_list, baf_list, seg_len, cnv_cutoff, loh_cutoff
 function calc_best_fit_baseline(log2_list, baf_list, seg_len, cnv_cutoff, loh_cutoff, cell, show_logging = false){
     var baselines = [];
     var fit_scores = [];
-    
+
     var baseline_shift = 0;
     var score = 99999;
-    
+
     for (let i = 0; i <= 100; i++)
     {
         baseline_shift = i/100;
-        
+
         baselines.push(-1 * baseline_shift);
         score = badness_of_fit(log2_list, baf_list, seg_len, cnv_cutoff, loh_cutoff, cell, -1 * baseline_shift) / Math.pow(1.01 - baseline_shift,0.33);
         fit_scores.push(score);
-        
+
         baselines.push(baseline_shift);
         score = badness_of_fit(log2_list, baf_list, seg_len, cnv_cutoff, loh_cutoff, cell, baseline_shift) / Math.pow(1.01 - baseline_shift,0.33);
         fit_scores.push(score);
         if (show_logging){console.log(`${baselines[baselines.length - 1]} : ${fit_scores[fit_scores.length - 1]}`);}
     }
-    
-    var best_fit_score = Math.min.apply(null,fit_scores); 
-    
+
+    var best_fit_score = Math.min.apply(null,fit_scores);
+
     for (let i = 0; i < fit_scores.length; i++)
     {
         if (best_fit_score == fit_scores[i])
@@ -2084,7 +2077,7 @@ function input_lists_exclude_haploid(log2_list, baf_list, seg_len, is_haploid){
             seg_len_cleaned.push(seg_len[i]);
         }
     }
-    
+
     return [log2_list_cleaned, baf_list_cleaned, seg_len_cleaned];
 }
 
@@ -2093,26 +2086,26 @@ function calc_best_fit_combined(log2_list, baf_list, seg_len, cnv_cutoff, loh_cu
     var baselines = [];
     var cellularities = [];
     var fit_scores = [];
-    
+
     for (let i = 0; i <= 100; i++)
     {
         var baseline_shift = i/100;
-        
+
         var fit_results_down = calc_best_fit_cell(log2_list, baf_list, seg_len, cnv_cutoff, loh_cutoff, -1 * baseline_shift);
         baselines.push(baseline_shift * -1);
         cellularities.push(fit_results_down[0]);
         fit_scores.push(fit_results_down[1] / Math.pow(1.01-baseline_shift,0.333));
         if (show_logging){console.log(`(${baselines[baselines.length - 1]},${cellularities[cellularities.length - 1]*100}%) : ${fit_scores[fit_scores.length - 1]}`);}
-        
+
         var fit_results_up = calc_best_fit_cell(log2_list, baf_list, seg_len, cnv_cutoff, loh_cutoff, baseline_shift);
         baselines.push(baseline_shift);
         cellularities.push(fit_results_up[0]);
         fit_scores.push(fit_results_up[1] / Math.pow(1.01-baseline_shift,0.333));
         if (show_logging){console.log(`(${baselines[baselines.length - 1]},${cellularities[cellularities.length - 1]*100}%) : ${fit_scores[fit_scores.length - 1]}`);}
     }
-    
-    var best_fit_score = Math.min.apply(null,fit_scores); 
-    
+
+    var best_fit_score = Math.min.apply(null,fit_scores);
+
     for (let i = 0; i < fit_scores.length; i++)
     {
         if (best_fit_score == fit_scores[i])
@@ -2177,7 +2170,7 @@ var fit_results = undefined;
         cell_calc_button.label = 'Auto-Adjustment'
         calcmode_radio.disabled = false
         cell_calc_button.disabled = false
-    }, 1) 
+    }, 1)
 """
     code = "".join([sliders, functions, constants, code])
     callback = CustomJS(
@@ -2862,13 +2855,13 @@ def generate_chrom_plot(
 
             const genelist_string = genelist_field.value_input;
             var genes_set = undefined;
-        
+
             if (!(!genelist_string || genelist_string == '' || genelist_string == '[]'))
             {
                 genes_set = new Set(genelist_string.replace('[','').replace(']','').split(','));
             }
             console.log(genes_set);
-            
+
             // For each row in the genes table, see if the Entrez Id is in our genes_list.
             // If so, or if there is no genes_list, it passes the filter.
             for (let i = 0; i < source.get_length(); i++) {
@@ -3190,10 +3183,10 @@ def generate_chrom_plot(
         code="""
     const button_state = radio_buttons.active;
     console.log('CNV Button State:' + button_state);
-    
+
     const data_points = source_points.data;
     const data_bins = source_bins.data;
-    
+
     for (var i = 0; i < data_points['alpha'].length; i++ ){
         if (button_state == 0){data_points['alpha'][i] = 1;}
         else if (button_state == 2){data_points['alpha'][i] = 1 - data_points['is_filtered'][i]}
@@ -3239,7 +3232,7 @@ def generate_chrom_plot(
         } else {
             // Show all genes
             custom_view.filters = []
-            
+
             gene_focals_view.filters = [focal_sd_filter]
             exon_focals_view.filters = [focal_sd_filter]
         }
@@ -3258,10 +3251,10 @@ def generate_chrom_plot(
         code="""
         const gene_label_radio_state = gene_label_radio.active;
         const all_genes_radio_state = all_genes_radio.active;
-        
+
         const data_points = source_genetable.data;
         const stored_data_points = source_genetable_stored.data;
-        
+
         // console.log('data_points')
         // console.log(data_points)
         // console.log('stored_data_points')
@@ -3281,7 +3274,7 @@ def generate_chrom_plot(
                     data_points['label_alpha'][i] = 1
                     stored_data_points['label_alpha'][i] = 1
                 } else {
-                    // We are displaying phenotype genes.  Label is displayed if either 
+                    // We are displaying phenotype genes.  Label is displayed if either
                     // - We have no genes_list ("All Genes" in Gene List dropdown)
                     // - Entrez Id is in the provided genes_list
 
@@ -4078,13 +4071,13 @@ def generate_genome_plot(
 
             const genelist_string = genelist_field.value_input;
             var genes_set = undefined;
-        
+
             if (!(!genelist_string || genelist_string == '' || genelist_string == '[]'))
             {
                 genes_set = new Set(genelist_string.replace('[','').replace(']','').split(','));
             }
             console.log(genes_set);
-            
+
             // For each row in the genes table, see if the Entrez Id is in our genes_list.
             // If so, or if there is no genes_list, it passes the filter.
             for (let i = 0; i < source.get_length(); i++) {
