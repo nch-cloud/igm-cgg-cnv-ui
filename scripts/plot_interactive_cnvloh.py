@@ -1435,7 +1435,7 @@ if __name__ == "__main__":
     cnvloh_json_2 = args.cnvloh_json_2
     out_format = args.out_format
     if not cnvloh_json:
-        from cnvloh_json.cnvloh2json import generate_cnvloh_json
+        from .cnvloh2json import generate_cnvloh_json
 
         modeled_seg_file = args.modelsegs_file
         cnv_subseg_file = args.counts_file
