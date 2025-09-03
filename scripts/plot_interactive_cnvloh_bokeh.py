@@ -2846,6 +2846,10 @@ def generate_chrom_plot(
     cnv.add_layout(cnv_labels)
 
     # Plot focal events
+    gene_focals_view = None
+    exon_focals_view = None
+    pheno_focal_filter = None
+    focal_sd_filter = None
     if focals_dict:
         # Filter to limit plotting of focal events to only show phenotype genes
         pheno_focal_filter = CustomJSFilter(
@@ -3320,6 +3324,7 @@ def generate_chrom_plot(
     # Can probably make things faster by reducing the number of steps in the sliders where reasonable.
 
     # Callback that alters Seg+CNV+LOH source
+    callback_focals = None
     if focals_dict:
         callback_focals = generate_callbackJS_focals(
             stored_focals_datasource,
@@ -3405,7 +3410,7 @@ def generate_chrom_plot(
         )
 
     # Callback that alters Seg+CNV+LOH source
-    if focals_dict:
+    if callback_focals:
         cell_slider.js_on_change("value", callback_focals)
         offset_slider.js_on_change("value", callback_focals)
         cnv_slider.js_on_change("value", callback_focals)
@@ -3421,7 +3426,8 @@ def generate_chrom_plot(
 
     # Callback that alters Gene Table source
     genelist_field.js_on_change("value_input", callback_genelist)
-    genelist_field.js_on_change("value_input", callback_focals)
+    if callback_focals:
+        genelist_field.js_on_change("value_input", callback_focals)
     genelist_field.js_on_change("value_input", callback_table)
 
     cnv_slider.js_on_change("value", callback_table)
@@ -3764,6 +3770,7 @@ def generate_genome_plot(
         title="Log2 Offset",
         name="offset_slider",
     )  # Changes zeroing point of CNV data
+    callback_focals = None
     if focals_dict:
         sd_slider, sd_spinner = slider_spinner(
             start=1,
@@ -3899,7 +3906,8 @@ def generate_genome_plot(
 
     # Callback that alters Gene Table source
     genelist_field.js_on_change("value_input", callback_genelist)
-    genelist_field.js_on_change("value_input", callback_focals)
+    if callback_focals:
+        genelist_field.js_on_change("value_input", callback_focals)
     genelist_field.js_on_change("value_input", callback_table)
 
     cnv_slider.js_on_change("value", callback_table)
@@ -4062,6 +4070,10 @@ def generate_genome_plot(
     cnv.add_tools(hover_cnvsegs)
 
     # Plot focal events
+    gene_focals_view = None
+    exon_focals_view = None
+    pheno_focal_filter = None
+    focal_sd_filter = None
     if focals_dict:
         # Filter to limit plotting of focal events to only show phenotype genes
         pheno_focal_filter = CustomJSFilter(
