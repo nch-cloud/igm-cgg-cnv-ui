@@ -1,0 +1,10 @@
+# Must use python==3.10
+# Python 3.12 removed ImpImporter, which is used by the pinned version of numpy
+
+bokeh==2.4.3
+# bokeh requires this version, but doesn't declare it
+numpy==1.23.5
+
+pandas
+ruff
+more-itertools
